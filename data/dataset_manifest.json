@@ -1,0 +1,41 @@
+{
+  "dataset_name": "NL2SQL Student DB Dataset v1",
+  "description": "Natural Language to SQL dataset for single-table queries on nl2sql_student_db.",
+  "schema": "students(student_id, name, age, department, cgpa) | courses(course_id, course_name, credits) | enrollments(enrollment_id, student_id, course_id, semester, marks)",
+  "total_examples": 300,
+  "split_counts": {
+    "train": 210,
+    "validation": 45,
+    "test": 45
+  },
+  "category_distribution": {
+    "Basic SELECT and projection": 30,
+    "WHERE and comparisons": 75,
+    "AND / OR conditions": 60,
+    "ORDER BY": 35,
+    "LIMIT": 25,
+    "Combined SQL patterns": 75
+  },
+  "table_distribution": {
+    "students": 150,
+    "courses": 60,
+    "enrollments": 90
+  },
+  "supported_sql_features": [
+    "SELECT",
+    "FROM",
+    "WHERE",
+    "=",
+    "!=",
+    ">",
+    "<",
+    ">=",
+    "<=",
+    "AND",
+    "OR",
+    "ORDER BY",
+    "ASC",
+    "DESC",
+    "LIMIT"
+  ]
+}

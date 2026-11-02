@@ -1,0 +1,5 @@
+# Project Dependencies for Schema-Aware NL2SQL Mini-Project
+sqlglot>=23.0.0
+torch>=2.0.0
+numpy>=1.24.0
+
