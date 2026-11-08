@@ -431,4 +431,6 @@ class Trainer:
 
         model.load_state_dict(checkpoint_data["model_state_dict"])
         model.to(target_device)
+        model.src_vocab = src_vocab
+        model.tgt_vocab = tgt_vocab
         return model, checkpoint_data, src_vocab, tgt_vocab

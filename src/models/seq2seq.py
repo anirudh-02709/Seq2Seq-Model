@@ -14,7 +14,7 @@ Supports:
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -316,3 +316,49 @@ class Seq2Seq(nn.Module):
             return torch.empty((batch_size, 0), dtype=torch.long, device=src.device)
 
         return torch.stack(generated_steps, dim=1)
+
+    def generate_sql(
+        self,
+        question: str,
+        schema: Optional[str] = None,
+        max_length: int = 60,
+        src_vocab: Optional[Any] = None,
+        tgt_vocab: Optional[Any] = None,
+        tokenizer: Optional[Any] = None,
+    ) -> str:
+        """
+        High-level standalone SQL generation method directly on the Seq2Seq model.
+
+        Reuses bound vocabularies (e.g. from checkpoint loading) or explicitly passed ones.
+
+        Args:
+            question: Natural language question.
+            schema: Database schema representation (or None for default).
+            max_length: Maximum number of tokens to generate.
+            src_vocab: Optional source vocabulary (defaults to self.src_vocab).
+            tgt_vocab: Optional target vocabulary (defaults to self.tgt_vocab).
+            tokenizer: Optional NL2SQLTokenizer (defaults to self.tokenizer).
+
+        Returns:
+            Generated SQL query string.
+        """
+        resolved_src_vocab = src_vocab if src_vocab is not None else getattr(self, "src_vocab", None)
+        resolved_tgt_vocab = tgt_vocab if tgt_vocab is not None else getattr(self, "tgt_vocab", None)
+        resolved_tokenizer = tokenizer if tokenizer is not None else getattr(self, "tokenizer", None)
+
+        if resolved_src_vocab is None or resolved_tgt_vocab is None:
+            raise ValueError(
+                "generate_sql requires 'src_vocab' and 'tgt_vocab' to be bound to the model "
+                "or passed explicitly. Alternatively, use NL2SQLInferencePipeline.from_checkpoint()."
+            )
+
+        from src.inference.pipeline import NL2SQLInferencePipeline
+
+        pipeline = NL2SQLInferencePipeline(
+            model=self,
+            src_vocab=resolved_src_vocab,
+            tgt_vocab=resolved_tgt_vocab,
+            tokenizer=resolved_tokenizer,
+            device=next(self.parameters()).device,
+        )
+        return pipeline.generate_sql(question=question, schema=schema, max_length=max_length)
