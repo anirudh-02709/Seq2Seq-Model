@@ -19,7 +19,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.database.config import DatabaseConfig
-from src.database.connection import DatabaseConnection, DatabaseError
+from src.database.connection import DatabaseConnection
 from src.database.schema import DatabaseSchemaInspector
 
 

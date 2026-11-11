@@ -1,5 +1,5 @@
 /**
- * TypeScript data models matching the FastAPI backend schemas (Milestone 5.2).
+ * TypeScript data models matching the FastAPI backend schemas.
  */
 
 export interface ModelHealthInfo {
@@ -134,9 +134,4 @@ export interface ExecuteResponse {
   warning: string | null;
   error: string | null;
   validation?: ValidationSummary | null;
-}
-
-export interface ApiError {
-  detail: string;
-  errors?: string[];
 }

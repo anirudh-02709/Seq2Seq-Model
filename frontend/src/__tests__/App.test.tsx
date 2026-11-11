@@ -15,9 +15,9 @@ const mockHealthData: HealthResponse = {
   status: 'healthy',
   model: {
     loaded: true,
-    checkpoint: 'checkpoints/best_model.pt',
-    source_vocab_size: 198,
-    target_vocab_size: 70,
+    checkpoint: 'checkpoints/candidates/phase2_clean_best.pt',
+    source_vocab_size: 290,
+    target_vocab_size: 96,
     device: 'cpu',
   },
   database: {

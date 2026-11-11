@@ -1,0 +1,416 @@
+{
+  "passed": true,
+  "summary": {
+    "total_records": 426,
+    "population_a_baseline_count": 210,
+    "population_b_new_count": 216,
+    "original_baseline_integrity": {
+      "expected_baseline_count": 210,
+      "present_baseline_count": 210,
+      "missing_baseline_count": 0,
+      "original_sql_altered_count": 0,
+      "question_clarified_ids": [
+        165,
+        173,
+        181
+      ]
+    },
+    "new_addition_integrity": {
+      "new_record_count": 216,
+      "duplicate_id_count": 0,
+      "duplicate_norm_question_count": 0,
+      "new_duplicates_original_count": 0,
+      "internal_near_duplicate_count": 0,
+      "shared_canon_sql_groups_count": 0
+    },
+    "supported_ast_transformations": [
+      "SQLGlot MySQL keyword/identifier normalization and canonical formatting",
+      "Associative & commutative conjunction flattening: (A AND B) AND C == C AND (B AND A)",
+      "Associative & commutative disjunction flattening: (A OR B) OR C == C OR (B OR A)",
+      "Precedence-preserving Boolean nesting: (A OR B) AND C != A OR (B AND C)",
+      "MySQL inequality operator normalization: != and <> both normalize to AST NEQ"
+    ],
+    "exact_question_overlaps": {
+      "validation": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "exact_q": 0,
+          "norm_q": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "exact_q": 0,
+          "norm_q": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "exact_q": 0,
+          "norm_q": 0
+        }
+      },
+      "test": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "exact_q": 0,
+          "norm_q": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "exact_q": 0,
+          "norm_q": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "exact_q": 0,
+          "norm_q": 0
+        }
+      },
+      "benchmark": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "exact_q": 0,
+          "norm_q": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "exact_q": 0,
+          "norm_q": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "exact_q": 0,
+          "norm_q": 0
+        }
+      }
+    },
+    "canonical_sql_overlaps": {
+      "validation": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "count": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "count": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "count": 0
+        }
+      },
+      "test": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "count": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "count": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "count": 0
+        }
+      },
+      "benchmark": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "count": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "count": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "count": 0
+        }
+      }
+    },
+    "commutative_boolean_overlaps": {
+      "validation": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "count": 0,
+          "purely_commutative_count": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "count": 0,
+          "purely_commutative_count": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "count": 0
+        }
+      },
+      "test": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "count": 0,
+          "purely_commutative_count": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "count": 0,
+          "purely_commutative_count": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "count": 0
+        }
+      },
+      "benchmark": {
+        "population_a_baseline": {
+          "classification": "grandfathered_baseline",
+          "count": 0,
+          "purely_commutative_count": 0,
+          "hits": []
+        },
+        "population_b_new": {
+          "count": 0,
+          "purely_commutative_count": 0,
+          "hits": []
+        },
+        "combined_corpus": {
+          "count": 0
+        }
+      }
+    },
+    "hard_failure_count": 0,
+    "soft_review_flag_count": 0,
+    "unreviewed_soft_flag_count": 0,
+    "projection_hard_failure_count": 0,
+    "projection_review_flag_count": 0,
+    "unreviewed_projection_flag_count": 0,
+    "zero_row_new_query_count": 0,
+    "unjustified_zero_row_new_count": 0,
+    "failure_reasons": [],
+    "gate_verdict": "PASSED"
+  },
+  "hard_failures": [],
+  "review_flags": [],
+  "template_overlaps": {
+    "validation": {
+      "ratio_definitions": {
+        "overlap_ratio": "matching_new_records / total_new_records",
+        "query_coverage_ratio": "new_only_matched_heldout_queries / total_heldout_queries",
+        "unique_template_coverage_ratio": "new_only_matched_unique_heldout_templates / total_unique_heldout_templates"
+      },
+      "total_heldout": 45,
+      "total_heldout_queries": 45,
+      "total_unique_heldout_templates": 45,
+      "total_new_records": 216,
+      "unique_templates_in_new": 215,
+      "population_a_baseline": {
+        "matching_orig_records": 7,
+        "total_orig_records": 210,
+        "matched_heldout_count": 6,
+        "matched_unique_templates_count": 6
+      },
+      "population_b_new": {
+        "matching_new_records": 1,
+        "matching_new_record_ids": [
+          503
+        ],
+        "unique_matching_templates_count": 1,
+        "new_only_matched_heldout_count": 1,
+        "new_only_matched_unique_templates_count": 1,
+        "overlap_ratio": 0.0046,
+        "new_record_template_ratio": 0.0046,
+        "query_coverage_ratio": 0.0222,
+        "unique_template_coverage_ratio": 0.0222,
+        "all_new_matched_heldout_count": 1,
+        "all_new_query_coverage_ratio": 0.0222,
+        "new_only_details": [
+          {
+            "ho_id": 226,
+            "template": "select enrollment_id, course_id, marks from enrollments where marks <= <num>"
+          }
+        ]
+      },
+      "combined_corpus": {
+        "matching_total_records": 8,
+        "total_records": 426
+      }
+    },
+    "test": {
+      "ratio_definitions": {
+        "overlap_ratio": "matching_new_records / total_new_records",
+        "query_coverage_ratio": "new_only_matched_heldout_queries / total_heldout_queries",
+        "unique_template_coverage_ratio": "new_only_matched_unique_heldout_templates / total_unique_heldout_templates"
+      },
+      "total_heldout": 45,
+      "total_heldout_queries": 45,
+      "total_unique_heldout_templates": 45,
+      "total_new_records": 216,
+      "unique_templates_in_new": 215,
+      "population_a_baseline": {
+        "matching_orig_records": 8,
+        "total_orig_records": 210,
+        "matched_heldout_count": 6,
+        "matched_unique_templates_count": 6
+      },
+      "population_b_new": {
+        "matching_new_records": 1,
+        "matching_new_record_ids": [
+          404
+        ],
+        "unique_matching_templates_count": 1,
+        "new_only_matched_heldout_count": 1,
+        "new_only_matched_unique_templates_count": 1,
+        "overlap_ratio": 0.0046,
+        "new_record_template_ratio": 0.0046,
+        "query_coverage_ratio": 0.0222,
+        "unique_template_coverage_ratio": 0.0222,
+        "all_new_matched_heldout_count": 1,
+        "all_new_query_coverage_ratio": 0.0222,
+        "new_only_details": [
+          {
+            "ho_id": 277,
+            "template": "select course_id, course_name from courses where course_id = <num> or course_id = <num>"
+          }
+        ]
+      },
+      "combined_corpus": {
+        "matching_total_records": 9,
+        "total_records": 426
+      }
+    },
+    "benchmark": {
+      "ratio_definitions": {
+        "overlap_ratio": "matching_new_records / total_new_records",
+        "query_coverage_ratio": "new_only_matched_heldout_queries / total_heldout_queries",
+        "unique_template_coverage_ratio": "new_only_matched_unique_heldout_templates / total_unique_heldout_templates"
+      },
+      "total_heldout": 80,
+      "total_heldout_queries": 80,
+      "total_unique_heldout_templates": 76,
+      "total_new_records": 216,
+      "unique_templates_in_new": 215,
+      "population_a_baseline": {
+        "matching_orig_records": 16,
+        "total_orig_records": 210,
+        "matched_heldout_count": 14,
+        "matched_unique_templates_count": 14
+      },
+      "population_b_new": {
+        "matching_new_records": 3,
+        "matching_new_record_ids": [
+          468,
+          477,
+          492
+        ],
+        "unique_matching_templates_count": 3,
+        "new_only_matched_heldout_count": 2,
+        "new_only_matched_unique_templates_count": 2,
+        "overlap_ratio": 0.0139,
+        "new_record_template_ratio": 0.0139,
+        "query_coverage_ratio": 0.025,
+        "unique_template_coverage_ratio": 0.0263,
+        "all_new_matched_heldout_count": 3,
+        "all_new_query_coverage_ratio": 0.0375,
+        "new_only_details": [
+          {
+            "ho_id": 1019,
+            "template": "select * from enrollments where semester = '<str>' and marks > <num>"
+          },
+          {
+            "ho_id": 1062,
+            "template": "select course_id, credits from courses where course_name = '<str>'"
+          }
+        ]
+      },
+      "combined_corpus": {
+        "matching_total_records": 19,
+        "total_records": 426
+      }
+    }
+  },
+  "literal_provenance_audit": {
+    "orig_numeric_count": 25,
+    "orig_string_count": 8,
+    "added_numeric_tokens": [
+      "11",
+      "13",
+      "16",
+      "17",
+      "18",
+      "19",
+      "25",
+      "32",
+      "40",
+      "7.25",
+      "7.75",
+      "72.5",
+      "77.5",
+      "8.25",
+      "8.75",
+      "82.5",
+      "87.5",
+      "9"
+    ],
+    "added_string_tokens": [
+      "Cloud Computing",
+      "Computer Networks",
+      "Database Management Systems",
+      "Design and Analysis of Algorithms",
+      "Object Oriented Programming with Java",
+      "Software Engineering"
+    ],
+    "heldout_exclusive_numeric_tokens": [
+      "14",
+      "15",
+      "72.0",
+      "8.8",
+      "9.2",
+      "92.0",
+      "94.0"
+    ],
+    "heldout_exclusive_string_tokens": [
+      "Machine Learning"
+    ],
+    "leaked_heldout_numeric_tokens": [],
+    "excluded_literal_violations": [],
+    "manifest_declared_count": 95,
+    "observed_literal_declarations": 90,
+    "synthetic_threshold_declarations": 5,
+    "undeclared_usage_count": 0,
+    "unused_or_mismatched_declaration_count": 0,
+    "example_traceability_violation_count": 0,
+    "context_violation_count": 0,
+    "non_catalog_string_count": 0,
+    "unjustified_heldout_string_tokens": []
+  },
+  "projection_policy_audit": {
+    "enabled": true,
+    "two_level_mode": true,
+    "checked_count": 216,
+    "hard_failure_count": 0,
+    "review_flag_count": 0,
+    "unreviewed_flag_count": 0,
+    "violation_count": 0,
+    "hard_failures": [],
+    "review_flags": [],
+    "violations": []
+  },
+  "validation_audit": {
+    "total_checked": 426,
+    "sqlglot_parse_pass_count": 426,
+    "sqlglot_parse_rate": 1.0,
+    "sqlvalidator_pass_count": 426,
+    "sqlvalidator_compliance_rate": 1.0,
+    "valid_with_rows_count": 426,
+    "valid_zero_rows_count": 0,
+    "valid_zero_rows_queries": [],
+    "zero_row_new_query_count": 0,
+    "approved_zero_row_new_count": 0,
+    "unjustified_zero_row_new_count": 0,
+    "invalid_query_count": 0,
+    "invalid_records": [],
+    "executed_count": 426,
+    "execution_infrastructure_failure_count": 0,
+    "execution_infrastructure_failures": [],
+    "live_execution_status": "complete"
+  }
+}

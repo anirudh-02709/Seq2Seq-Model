@@ -8,7 +8,7 @@ correctness, read-only safety permissions, schema compatibility, and model scope
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 
 @dataclass

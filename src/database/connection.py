@@ -7,13 +7,12 @@ context management for resource cleanup, and credential protection.
 
 from __future__ import annotations
 
-import re
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Optional, Type, Union
 
 import pymysql
 import pymysql.cursors
 
-from src.database.config import DatabaseConfig, DatabaseConfigurationError, DatabaseError
+from src.database.config import DatabaseConfig, DatabaseError
 
 
 class DatabaseConnectionError(DatabaseError):
@@ -119,7 +118,7 @@ class DatabaseConnection:
             return self._connection
 
         except pymysql.err.OperationalError as err:
-            err_code, err_msg = err.args[0], err.args[1] if len(err.args) > 1 else str(err)
+            err_code = err.args[0]
             clean_msg = sanitize_db_error(err, self.config.password)
 
             if err_code == 1045:

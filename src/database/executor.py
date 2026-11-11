@@ -16,12 +16,12 @@ import decimal
 import time
 from dataclasses import dataclass, field
 from datetime import date, datetime, time as dt_time, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional
 
 import pymysql
 
 from src.database.config import DatabaseConfig, DatabaseConfigurationError
-from src.database.connection import DatabaseConnection, DatabaseError, sanitize_db_error
+from src.database.connection import DatabaseConnection, sanitize_db_error
 from src.validation.result import ValidationResult
 
 

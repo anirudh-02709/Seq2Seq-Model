@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Request, status
 
@@ -59,6 +58,23 @@ def _to_validation_summary(val_res: ValidationResult) -> ValidationSummary:
     )
 
 
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_DEFAULT_CHECKPOINT_LABEL = "checkpoints/candidates/phase2_clean_best.pt"
+
+
+def _resolve_checkpoint_label(pipeline: NL2SQLPipeline) -> str:
+    """Returns a sanitized repository-relative checkpoint path when available."""
+    inf_pipe = getattr(pipeline, "inference_pipeline", None)
+    info = getattr(inf_pipe, "checkpoint_info", None)
+    raw_path = info.get("checkpoint_path") if isinstance(info, dict) else None
+    if not isinstance(raw_path, str) or not raw_path:
+        return _DEFAULT_CHECKPOINT_LABEL
+    try:
+        return Path(raw_path).resolve().relative_to(_PROJECT_ROOT).as_posix()
+    except ValueError:
+        return Path(raw_path).name
+
+
 def _get_pipeline(request: Request) -> NL2SQLPipeline:
     """Retrieves the pre-initialized NL2SQLPipeline from application state."""
     pipeline = getattr(request.app.state, "pipeline", None)
@@ -86,7 +102,7 @@ def get_health(request: Request) -> HealthResponse:
 
     model_info = ModelHealthInfo(
         loaded=model_loaded,
-        checkpoint="checkpoints/best_model.pt" if model_loaded else None,
+        checkpoint=_resolve_checkpoint_label(pipeline) if model_loaded else None,
         source_vocab_size=len(pipeline.inference_pipeline.src_vocab) if model_loaded else None,
         target_vocab_size=len(pipeline.inference_pipeline.tgt_vocab) if model_loaded else None,
         device=str(pipeline.inference_pipeline.device) if model_loaded else None,

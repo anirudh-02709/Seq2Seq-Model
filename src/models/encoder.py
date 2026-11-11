@@ -157,7 +157,7 @@ class Encoder(nn.Module):
                 f"A sequence length in 'src_lengths' exceeds source sequence dimension ({src.size(1)})."
             )
 
-        batch_size, seq_len = src.shape
+        _, seq_len = src.shape
 
         # 1. Embedding lookup: (batch_size, seq_len) -> (batch_size, seq_len, embedding_dim)
         embedded = self.dropout(self.embedding(src))

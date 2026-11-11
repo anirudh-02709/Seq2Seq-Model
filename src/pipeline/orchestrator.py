@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import torch
 
@@ -126,7 +126,7 @@ class NL2SQLPipeline:
     @classmethod
     def from_checkpoint(
         cls,
-        checkpoint_path: Union[str, Path] = "checkpoints/best_model.pt",
+        checkpoint_path: Union[str, Path] = "checkpoints/candidates/phase2_clean_best.pt",
         db_config: Optional[DatabaseConfig] = None,
         executor: Optional[SQLExecutor] = None,
         default_schema: Optional[str] = None,

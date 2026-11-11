@@ -36,6 +36,13 @@ import tempfile
 import argparse
 import subprocess
 from collections import defaultdict
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.data.tokenizer import DEFAULT_STUDENT_SCHEMA
 
 # Genuine SQL Parser dependency
 try:
@@ -49,11 +56,7 @@ except ImportError:
 # 1. SPECIFICATION CONSTANTS
 # =============================================================================
 
-CANONICAL_SCHEMA_STR = (
-    "students(student_id, name, age, department, cgpa) | "
-    "courses(course_id, course_name, credits) | "
-    "enrollments(enrollment_id, student_id, course_id, semester, marks)"
-)
+CANONICAL_SCHEMA_STR = DEFAULT_STUDENT_SCHEMA
 
 CANONICAL_SCHEMA_TABLES = {
     "students": ["student_id", "name", "age", "department", "cgpa"],
@@ -467,12 +470,6 @@ def validate_sql_with_ast_allowlist(record):
     is_approved = len(record_errors) == 0
     return is_approved, record_errors
 
-# Backward-compatibility alias for test callers
-def validate_sql_with_ast(record, errors):
-    is_approved, rec_errs = validate_sql_with_ast_allowlist(record)
-    errors.extend(rec_errs)
-    return is_approved, errors
-
 # =============================================================================
 # 6. DUPLICATE AND CROSS-SPLIT LEAKAGE DETECTION
 # =============================================================================
@@ -500,25 +497,25 @@ def validate_duplicates_and_leakage(records, errors, warnings):
 
         q_tokens_by_split[split].append((rec_id, tokenize_words(q_raw), q_raw))
 
-    for (q_text, s_text), occurrences in seen_pairs.items():
+    for occurrences in seen_pairs.values():
         if len(occurrences) > 1:
             desc = ", ".join([f"[{sp} ID:{rid}]" for sp, rid in occurrences])
             errors.append(f"Duplicate (question, SQL) pair found across {len(occurrences)} records: {desc}")
 
-    for q_norm, occurrences in seen_questions.items():
+    for occurrences in seen_questions.values():
         if len(occurrences) > 1:
-            splits_involved = set(sp for sp, rid, raw_q in occurrences)
-            desc = ", ".join([f"[{sp} ID:{rid}]" for sp, rid, raw_q in occurrences])
+            splits_involved = set(sp for sp, _, _ in occurrences)
+            desc = ", ".join([f"[{sp} ID:{rid}]" for sp, rid, _ in occurrences])
             if len(splits_involved) > 1:
                 errors.append(f"Cross-split question leakage detected across {sorted(list(splits_involved))}: {desc}")
             else:
                 errors.append(f"Duplicate question detected within split '{list(splits_involved)[0]}': {desc}")
 
-    for sql_norm, occurrences in seen_sqls.items():
+    for occurrences in seen_sqls.values():
         if len(occurrences) > 1:
-            splits_involved = set(sp for sp, rid, raw_s in occurrences)
+            splits_involved = set(sp for sp, _, _ in occurrences)
             if len(splits_involved) > 1:
-                desc = ", ".join([f"[{sp} ID:{rid}]" for sp, rid, raw_s in occurrences])
+                desc = ", ".join([f"[{sp} ID:{rid}]" for sp, rid, _ in occurrences])
                 errors.append(f"Cross-split identical SQL target leakage detected across {sorted(list(splits_involved))}: {desc}")
 
     split_pairs = [("train", "validation"), ("train", "test"), ("validation", "test")]
@@ -1070,7 +1067,7 @@ def main():
     )
     args = parser.parse_args()
 
-    success, code = run_validation(static_only=args.static_only)
+    _, code = run_validation(static_only=args.static_only)
     sys.exit(code)
 
 if __name__ == "__main__":

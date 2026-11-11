@@ -8,7 +8,7 @@ columns, data types, primary keys, and foreign keys.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional
 
 from src.database.config import DatabaseConfig
 from src.database.connection import DatabaseConnection

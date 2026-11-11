@@ -10,7 +10,7 @@ Defines strongly-typed data contracts for all API endpoints:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -134,7 +134,7 @@ class ValidationSummary(BaseModel):
     is_permitted_read_only: bool = Field(..., description="True if query is strictly a single read-only SELECT.")
     is_schema_compatible: bool = Field(..., description="True if referenced tables and columns exist.")
     is_in_supported_scope: bool = Field(..., description="True if all clauses are within general read-only scope.")
-    is_in_model_scope: bool = Field(True, description="True if query adheres strictly to 70-token model vocabulary.")
+    is_in_model_scope: bool = Field(True, description="True if query adheres strictly to the model's closed target vocabulary.")
     normalized_sql: Optional[str] = Field(None, description="MySQL-canonicalized SQL statement.")
     raw_sql: Optional[str] = Field(None, description="Unnormalized generated SQL statement.")
     errors: list[str] = Field(default_factory=list, description="Validation failure reasons.")

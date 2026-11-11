@@ -14,7 +14,7 @@ describe('Individual Component Unit Tests', () => {
   describe('Header Component', () => {
     const mockHealth: HealthResponse = {
       status: 'healthy',
-      model: { loaded: true, checkpoint: 'checkpoints/best_model.pt', source_vocab_size: 198, target_vocab_size: 70, device: 'cuda' },
+      model: { loaded: true, checkpoint: 'checkpoints/candidates/phase2_clean_best.pt', source_vocab_size: 290, target_vocab_size: 96, device: 'cuda' },
       database: { connected: true, database: 'test_db', host: 'localhost', port: 3306, exec_user: 'nl2sql_exec', mysql_version: '8.0', error: null },
     };
 

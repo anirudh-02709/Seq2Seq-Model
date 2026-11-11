@@ -10,7 +10,7 @@ Provides tokenization for:
 from __future__ import annotations
 
 import re
-from typing import Iterable, List, Optional
+from typing import Iterable, List
 
 # Special Token Constants
 PAD_TOKEN: str = "<PAD>"
@@ -26,6 +26,13 @@ SOS_IDX: int = 2
 EOS_IDX: int = 3
 
 DEFAULT_SPECIAL_TOKENS: list[str] = [PAD_TOKEN, UNK_TOKEN, SOS_TOKEN, EOS_TOKEN]
+
+# Canonical student database schema string matching training and validation splits
+DEFAULT_STUDENT_SCHEMA: str = (
+    "students(student_id, name, age, department, cgpa) | "
+    "courses(course_id, course_name, credits) | "
+    "enrollments(enrollment_id, student_id, course_id, semester, marks)"
+)
 
 # Regex patterns for tokenization
 # SQL Tokenizer Pattern:

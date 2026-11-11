@@ -27,7 +27,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.database.config import DatabaseConfig, DatabaseConfigurationError
-from src.database.connection import DatabaseConnection
 from src.database.executor import SQLExecutor
 from src.pipeline.orchestrator import NL2SQLPipeline
 
@@ -35,6 +34,12 @@ from src.pipeline.orchestrator import NL2SQLPipeline
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Verify end-to-end NL2SQL pipeline from natural language to MySQL execution."
+    )
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        default="checkpoints/candidates/phase2_clean_best.pt",
+        help="Path to trained model checkpoint (default: checkpoints/candidates/phase2_clean_best.pt).",
     )
     parser.add_argument(
         "--question",
@@ -113,7 +118,7 @@ def run_pipeline_demo() -> int:
         print("=" * 76)
         print("  NL2SQL End-to-End Pipeline Verification (Milestone 4, Task 4.4)")
         print("=" * 76)
-        print(f"Model Checkpoint:    checkpoints/best_model.pt")
+        print(f"Model Checkpoint:    {args.checkpoint}")
         print(f"Approval Granted:    {args.approve}")
         print(f"Max Rows Limit:      {args.max_rows}")
         if has_exec_account and exec_cfg:
@@ -126,8 +131,10 @@ def run_pipeline_demo() -> int:
     # Instantiate pipeline from checkpoint
     try:
         executor = SQLExecutor(config=exec_cfg) if has_exec_account else None
+        chk_arg = Path(args.checkpoint)
+        resolved_chk = chk_arg if chk_arg.is_absolute() else (PROJECT_ROOT / chk_arg)
         pipeline = NL2SQLPipeline.from_checkpoint(
-            checkpoint_path=PROJECT_ROOT / "checkpoints" / "best_model.pt",
+            checkpoint_path=resolved_chk,
             executor=executor,
             default_schema=args.schema,
         )

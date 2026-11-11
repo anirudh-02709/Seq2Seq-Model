@@ -2,13 +2,16 @@
 Database package for MySQL connectivity and schema inspection (Milestone 4, Task 4.2).
 """
 
-from src.database.config import DatabaseConfig, parse_dotenv_file
+from src.database.config import (
+    DatabaseConfig,
+    DatabaseConfigurationError,
+    DatabaseError,
+    parse_dotenv_file,
+)
 from src.database.connection import (
     DatabaseAuthenticationError,
-    DatabaseConfigurationError,
     DatabaseConnection,
     DatabaseConnectionError,
-    DatabaseError,
     DatabaseNotFoundError,
     sanitize_db_error,
 )

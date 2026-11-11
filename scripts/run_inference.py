@@ -42,7 +42,7 @@ def parse_args() -> argparse.Namespace:
         "--checkpoint",
         "-c",
         type=str,
-        default="checkpoints/best_model.pt",
+        default="checkpoints/candidates/phase2_clean_best.pt",
         help="Path to trained checkpoint file",
     )
     parser.add_argument(
@@ -56,6 +56,19 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default=None,
         help="Device to run on ('cpu' or 'cuda')",
+    )
+    parser.add_argument(
+        "--decoding_mode",
+        type=str,
+        choices=["schema_aware", "greedy"],
+        default="schema_aware",
+        help="Decoding mode ('schema_aware' constrained beam or 'greedy' baseline)",
+    )
+    parser.add_argument(
+        "--beam_width",
+        type=int,
+        default=5,
+        help="Beam width / candidate limit for schema-aware decoding (default: 5)",
     )
     parser.add_argument(
         "--verbose",
@@ -72,6 +85,8 @@ def main() -> None:
     pipeline = NL2SQLInferencePipeline.from_checkpoint(
         checkpoint_path=args.checkpoint,
         device=args.device,
+        decoding_mode=args.decoding_mode,
+        beam_width=args.beam_width,
     )
 
     if args.verbose:
@@ -85,10 +100,16 @@ def main() -> None:
         print("=" * 60)
         print(f"Question:       {result.question}")
         print(f"Schema:         {result.schema}")
+        print(f"Decoding Mode:  {result.decoding_mode} (beam={result.beam_width})")
         print(f"Predicted SQL:  {result.sql}")
         print(f"Valid MySQL:    {result.is_valid_sql}")
+        print(f"Schema Valid:   {result.is_schema_valid}")
         if result.syntax_error:
             print(f"Syntax Error:   {result.syntax_error}")
+        if result.validation_error:
+            print(f"Schema Error:   {result.validation_error}")
+        print(f"Candidates:     examined={result.candidates_examined}, rejected={result.candidates_rejected}")
+        print(f"Latency (ms):   {result.decoding_latency_ms}")
         print(f"Source UNK:     {result.source_unk_count}")
         print(f"Target UNK:     {result.target_unk_count}")
         print("=" * 60)

@@ -97,7 +97,7 @@ export const SQLPreview: React.FC<SQLPreviewProps> = ({
 
         <span
           className={`val-badge ${validation.is_in_model_scope ? 'val-pass' : 'val-fail'}`}
-          title="Complies strictly with 70-token trained model vocabulary bounds"
+          title="Complies strictly with the trained model's closed target vocabulary"
         >
           {validation.is_in_model_scope ? '✓' : '✗'} Model Scope
         </span>

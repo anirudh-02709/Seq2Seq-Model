@@ -4,6 +4,7 @@ Data preprocessing package for NL2SQL Seq2Seq model.
 
 from src.data.tokenizer import (
     DEFAULT_SPECIAL_TOKENS,
+    DEFAULT_STUDENT_SCHEMA,
     EOS_IDX,
     EOS_TOKEN,
     PAD_IDX,
@@ -45,6 +46,7 @@ __all__ = [
     "SOS_IDX",
     "EOS_IDX",
     "DEFAULT_SPECIAL_TOKENS",
+    "DEFAULT_STUDENT_SCHEMA",
     "combine_schema_and_question",
     "tokenize_encoder",
     "tokenize_sql",

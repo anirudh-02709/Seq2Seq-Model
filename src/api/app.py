@@ -14,7 +14,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator, List, Optional, Union
+from typing import AsyncGenerator, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +24,9 @@ from src.pipeline.orchestrator import NL2SQLPipeline
 
 logger = logging.getLogger("src.api.app")
 
-DEFAULT_CHECKPOINT_PATH = Path(__file__).resolve().parent.parent.parent / "checkpoints" / "best_model.pt"
+DEFAULT_CHECKPOINT_PATH = (
+    Path(__file__).resolve().parent.parent.parent / "checkpoints" / "candidates" / "phase2_clean_best.pt"
+)
 DEFAULT_CORS_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",

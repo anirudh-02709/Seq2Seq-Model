@@ -1,10 +1,10 @@
 """
-Training Entry Point for NL2SQL Seq2Seq Model (Phase 3, Step 3.6).
+Training Entry Point for NL2SQL Seq2Seq Model.
 
 Loads:
-- Train split (210 records)
-- Validation split (45 records)
-Strictly reserves test split (45 records) for Step 3.7.
+- Training split (default: data/train.jsonl or explicit --train_file)
+- Validation split (data/validation.jsonl)
+Strictly isolates test and benchmark splits from training.
 
 Builds:
 - Vocabularies exclusively from training data
@@ -12,8 +12,8 @@ Builds:
 - Trainer with CrossEntropyLoss and Adam optimizer
 
 Saves:
-- Best model checkpoint based on validation loss to checkpoints/best_model.pt
-- Epoch-by-epoch metrics to training_history.json
+- Best model checkpoint based on validation selection metric
+- Epoch-by-epoch training metrics to history JSON
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import torch
 
-from src.data.dataset import NL2SQLDataset, create_dataloader, load_split
+from src.data.dataset import NL2SQLDataset, create_dataloader, load_jsonl_records, load_split
 from src.data.tokenizer import NL2SQLTokenizer
 from src.data.vocabulary import build_vocabularies
 from src.models.decoder import Decoder
@@ -42,9 +42,37 @@ from src.training.trainer import Trainer
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train NL2SQL Attention-based Seq2Seq Model")
     parser.add_argument("--data_dir", type=str, default="data", help="Directory containing dataset splits")
-    parser.add_argument("--checkpoint_dir", type=str, default="checkpoints", help="Directory to save model checkpoints")
-    parser.add_argument("--history_path", type=str, default="training_history.json", help="Path to save training history JSON")
-    parser.add_argument("--epochs", type=int, default=25, help="Number of training epochs")
+    parser.add_argument(
+        "--train_file",
+        type=str,
+        default=None,
+        help="Optional explicit training JSONL path (defaults to data_dir/train.jsonl)",
+    )
+    parser.add_argument(
+        "--vocab_dir",
+        type=str,
+        default=None,
+        help="Optional directory to save src_vocab.json and tgt_vocab.json artifacts",
+    )
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        default="checkpoints",
+        help="Directory to save model checkpoints",
+    )
+    parser.add_argument(
+        "--checkpoint_name",
+        type=str,
+        default="trained_model.pt",
+        help="Filename for saved candidate checkpoint within checkpoint_dir",
+    )
+    parser.add_argument(
+        "--history_path",
+        type=str,
+        default="checkpoints/training_history.json",
+        help="Path to save training history JSON",
+    )
+    parser.add_argument("--epochs", type=int, default=100, help="Maximum number of training epochs")
     parser.add_argument("--batch_size", type=int, default=16, help="Batch size for training and evaluation")
     parser.add_argument("--embedding_dim", type=int, default=64, help="Embedding dimension for source and target tokens")
     parser.add_argument("--hidden_dim", type=int, default=128, help="GRU hidden state dimension")
@@ -52,8 +80,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dropout", type=float, default=0.1, help="Dropout rate")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate for Adam optimizer")
     parser.add_argument("--clip_norm", type=float, default=1.0, help="Max norm for gradient clipping")
-    parser.add_argument("--teacher_forcing_ratio", type=float, default=1.0, help="Initial teacher forcing ratio")
+    parser.add_argument(
+        "--teacher_forcing_ratio",
+        type=float,
+        default=0.50,
+        help="Teacher forcing ratio during training (default: 0.50; set 1.0 for Phase 1 baseline)",
+    )
+    parser.add_argument(
+        "--selection_metric",
+        type=str,
+        default="val_exact_match",
+        choices=["val_exact_match", "val_loss"],
+        help="Primary validation metric for checkpoint selection (default: val_exact_match)",
+    )
+    parser.add_argument(
+        "--early_stopping_patience",
+        type=int,
+        default=20,
+        help="Epochs without validation improvement before early stopping (0 disables)",
+    )
+    parser.add_argument("--min_em_delta", type=float, default=1e-6, help="Minimum exact match improvement delta")
+    parser.add_argument("--min_loss_delta", type=float, default=1e-4, help="Minimum val loss improvement delta")
+    parser.add_argument("--eval_max_length", type=int, default=60, help="Max decoding length during greedy validation")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
+    parser.add_argument(
+        "--allow_overwrite_baseline",
+        action="store_true",
+        help="Explicitly allow overwriting the protected Phase 2 model checkpoint (disabled by default)",
+    )
     return parser.parse_args()
 
 
@@ -67,18 +121,42 @@ def set_seed(seed: int) -> None:
 def run_training(args: argparse.Namespace) -> list[dict]:
     set_seed(args.seed)
 
+    target_checkpoint = (Path(args.checkpoint_dir) / args.checkpoint_name).resolve()
+    protected_checkpoints = {
+        (PROJECT_ROOT / "checkpoints" / "candidates" / "phase2_clean_best.pt").resolve(),
+    }
+    if target_checkpoint in protected_checkpoints and not getattr(args, "allow_overwrite_baseline", False):
+        raise ValueError(
+            f"Refusing to overwrite protected checkpoint at '{target_checkpoint}'. "
+            "Use a separate candidate path (e.g. checkpoints/trained_model.pt) "
+            "or pass --allow_overwrite_baseline explicitly."
+        )
+
     data_dir = Path(args.data_dir)
     print("=" * 70)
-    print("NL2SQL Attention-Based Seq2Seq Model Training (Phase 3, Step 3.6)")
+    print("NL2SQL Attention-Based Seq2Seq Model Training")
     print("=" * 70)
 
-    # 1. Load train and validation splits (NEVER touching test split)
+    # 1. Load train and validation splits (NEVER touching test or benchmark splits)
     print("\n[1/5] Loading dataset splits...")
-    train_recs = load_split("train", data_dir=data_dir)
+    train_file = getattr(args, "train_file", None)
+    if train_file is not None:
+        resolved_train = Path(train_file).resolve()
+        forbidden_splits = {
+            (data_dir / "validation.jsonl").resolve(),
+            (data_dir / "test.jsonl").resolve(),
+            (data_dir / "benchmark_eval.jsonl").resolve(),
+        }
+        if resolved_train in forbidden_splits:
+            raise ValueError(f"Refusing to train on held-out split: {resolved_train}")
+        train_recs = load_jsonl_records(resolved_train)
+        print(f"  Using custom training file: {train_file}")
+    else:
+        train_recs = load_split("train", data_dir=data_dir)
     val_recs = load_split("validation", data_dir=data_dir)
     print(f"  Loaded Train records: {len(train_recs)}")
     print(f"  Loaded Validation records: {len(val_recs)}")
-    print("  Test split strictly reserved for Step 3.7 evaluation.")
+    print("  Test and benchmark splits strictly excluded from training.")
 
     # 2. Build vocabularies EXCLUSIVELY from training data
     print("\n[2/5] Building vocabularies from training data...")
@@ -89,6 +167,13 @@ def run_training(args: argparse.Namespace) -> list[dict]:
     )
     print(f"  Source vocabulary size (encoder input): {len(src_vocab)}")
     print(f"  Target vocabulary size (decoder SQL):  {len(tgt_vocab)}")
+    vocab_dir = getattr(args, "vocab_dir", None)
+    if vocab_dir is not None:
+        vocab_path = Path(vocab_dir)
+        vocab_path.mkdir(parents=True, exist_ok=True)
+        src_vocab.save(vocab_path / "src_vocab.json")
+        tgt_vocab.save(vocab_path / "tgt_vocab.json")
+        print(f"  Saved vocabulary artifacts to: {vocab_path.resolve()}")
 
     # 3. Create DataLoaders
     train_dataset = NL2SQLDataset(
@@ -105,9 +190,10 @@ def run_training(args: argparse.Namespace) -> list[dict]:
     )
 
     train_loader = create_dataloader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    train_eval_loader = create_dataloader(train_dataset, batch_size=args.batch_size, shuffle=False)
     val_loader = create_dataloader(val_dataset, batch_size=args.batch_size, shuffle=False)
 
-    # 4. Build Seq2Seq Architecture
+    # 4. Build Seq2Seq Architecture (unchanged)
     print("\n[3/5] Instantiating Seq2Seq architecture...")
     encoder = Encoder(
         vocab=src_vocab,
@@ -134,6 +220,7 @@ def run_training(args: argparse.Namespace) -> list[dict]:
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"  Total trainable parameters: {total_params:,}")
 
+    patience = args.early_stopping_patience if args.early_stopping_patience > 0 else None
     config = {
         "source_vocab_size": len(src_vocab),
         "target_vocab_size": len(tgt_vocab),
@@ -141,13 +228,22 @@ def run_training(args: argparse.Namespace) -> list[dict]:
         "hidden_dim": args.hidden_dim,
         "attention_dim": args.attention_dim,
         "dropout": args.dropout,
+        "optimizer": "Adam",
         "lr": args.lr,
+        "learning_rate": args.lr,
         "batch_size": args.batch_size,
-        "epochs": args.epochs,
+        "max_epochs": args.epochs,
         "clip_norm": args.clip_norm,
         "teacher_forcing_ratio": args.teacher_forcing_ratio,
+        "selection_metric": args.selection_metric,
+        "early_stopping_patience": patience,
+        "min_em_delta": args.min_em_delta,
+        "min_loss_delta": args.min_loss_delta,
+        "eval_max_length": args.eval_max_length,
         "seed": args.seed,
     }
+    if train_file is not None:
+        config["train_file"] = str(train_file)
 
     # 5. Initialize Trainer and run
     print("\n[4/5] Initializing Trainer...")
@@ -155,17 +251,30 @@ def run_training(args: argparse.Namespace) -> list[dict]:
         model=model,
         train_loader=train_loader,
         val_loader=val_loader,
+        train_eval_loader=train_eval_loader,
         learning_rate=args.lr,
         clip_norm=args.clip_norm,
         teacher_forcing_ratio=args.teacher_forcing_ratio,
         checkpoint_dir=args.checkpoint_dir,
+        checkpoint_name=args.checkpoint_name,
         history_path=args.history_path,
         src_vocab=src_vocab,
         tgt_vocab=tgt_vocab,
+        tokenizer=tokenizer,
+        selection_metric=args.selection_metric,
+        early_stopping_patience=patience,
+        min_em_delta=args.min_em_delta,
+        min_loss_delta=args.min_loss_delta,
+        eval_max_length=args.eval_max_length,
+        seed=args.seed,
+        batch_size=args.batch_size,
         config=config,
     )
     print(f"  Target Device: {trainer.device}")
-    print(f"  Checkpoints Directory: {Path(args.checkpoint_dir).resolve()}")
+    print(f"  Teacher Forcing Ratio: {args.teacher_forcing_ratio:.2f}")
+    print(f"  Selection Metric: {args.selection_metric} (tie-breaker: val_loss)")
+    print(f"  Early Stopping Patience: {patience if patience is not None else 'disabled'}")
+    print(f"  Target Checkpoint: {target_checkpoint}")
     print(f"  History JSON: {Path(args.history_path).resolve()}")
 
     print("\n[5/5] Commencing training and validation...")
@@ -176,11 +285,15 @@ def run_training(args: argparse.Namespace) -> list[dict]:
     best_record = next(r for r in history if r["epoch"] == trainer.best_epoch)
     print("\n" + "=" * 70)
     print("Training Complete!")
-    print(f"  Best Epoch:           {trainer.best_epoch} / {args.epochs}")
+    print(f"  Completed Epochs:     {len(history)} / {args.epochs} (Early Stopped: {trainer.early_stopped})")
+    print(f"  Best Epoch:           {trainer.best_epoch}")
+    print(f"  Best Val EM:          {best_record['val_exact_match'] * 100:.2f}%")
     print(f"  Best Val Loss:        {best_record['val_loss']:.4f}")
     print(f"  Best Val Token Acc:   {best_record['val_token_acc'] * 100:.2f}%")
+    if best_record.get("val_schema_compatibility") is not None:
+        print(f"  Best Val Schema Comp: {best_record['val_schema_compatibility'] * 100:.2f}%")
     print(f"  Final Train Loss:     {history[-1]['train_loss']:.4f}")
-    print(f"  Saved Checkpoint:     {Path(args.checkpoint_dir) / 'best_model.pt'}")
+    print(f"  Saved Checkpoint:     {target_checkpoint}")
     print(f"  Saved History:        {Path(args.history_path)}")
     print("=" * 70)
 

@@ -6,10 +6,18 @@ Generates exactly 300 high-quality question-SQL pairs distributed across:
 - 3 splits (train: 210, validation: 45, test: 45)
 """
 
-import os
 import json
+import os
+import sys
+from pathlib import Path
 
-SCHEMA_STR = "students(student_id, name, age, department, cgpa) | courses(course_id, course_name, credits) | enrollments(enrollment_id, student_id, course_id, semester, marks)"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.data.tokenizer import DEFAULT_STUDENT_SCHEMA
+
+SCHEMA_STR = DEFAULT_STUDENT_SCHEMA
 
 # Define all 300 records as structured tuples:
 # (split, category, table, question, sql)

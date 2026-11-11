@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Optional, Union
 
 # Silence non-critical sqlglot parser fallbacks
 logging.getLogger("sqlglot").setLevel(logging.ERROR)
@@ -532,7 +532,7 @@ class SQLValidator:
         # Stage 4: Scope Boundaries Check
         # Current parser-supported scope: SELECT, WHERE, comparisons, AND/OR, ORDER BY, LIMIT
         # Out-of-scope: Aggregations, GROUP BY, HAVING, JOIN, multiple FROM tables, UNION, subqueries
-        # Trained Model scope: strictly 70-token target vocabulary
+        # Supported single-table scope: SELECT, FROM, WHERE, ORDER BY, LIMIT
         # -------------------------------------------------------------
         is_in_supported_scope = True
         out_of_scope_features: list[str] = []
@@ -597,7 +597,7 @@ class SQLValidator:
             else:
                 warnings.append(f"{msg} (Allowed because general scope enforcement is disabled).")
 
-        # Model Scope Inspection (strictly evaluating against 70-token target vocabulary)
+        # Model Scope Inspection (evaluating against the model's closed target vocabulary)
         # Features absent from model target vocabulary:
         # LIKE, BETWEEN, IN, IS NULL/IS NOT NULL, NOT, Table Aliases, AS aliases, Functions
         is_in_model_scope = is_in_supported_scope
@@ -831,7 +831,7 @@ def validate_sql(
         schema: Optional schema metadata (metadata object, dict, or canonical string).
         enforce_scope: Whether to require strict adherence to general supported read-only scope.
         enforce_model_scope: Whether to strictly enforce the trained Seq2Seq model vocabulary boundary.
-            Defaults to True to guarantee that queries stay within the model's 70-token generative capability.
+            Defaults to True to guarantee that queries stay within the model's closed target vocabulary.
             Explicit opt-out (False) is reserved for future manual SQL testing and must NOT be used
             for model-generated SQL.
 

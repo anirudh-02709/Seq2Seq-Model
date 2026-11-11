@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from torch.nn.utils.rnn import pad_sequence
@@ -20,7 +20,6 @@ from torch.utils.data import DataLoader, Dataset
 
 from src.data.tokenizer import (
     PAD_IDX,
-    PAD_TOKEN,
     NL2SQLTokenizer,
 )
 from src.data.vocabulary import (
